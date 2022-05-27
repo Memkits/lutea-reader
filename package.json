@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@calcit/procs": "^0.5.44-a4"
+    "@calcit/procs": "^0.5.44-a4",
+    "@memkits/azure-speech-util": "^0.0.5"
   },
   "devDependencies": {
     "bottom-tip": "^0.1.3",

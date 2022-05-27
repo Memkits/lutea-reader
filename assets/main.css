@@ -20,7 +20,8 @@ body * {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: hsla(200,80%,76%,0.8);
+  border-radius: 2px;
+  background-color: hsla(200,20%,56%,0.8);
 }
 
 ::-webkit-scrollbar-corner {
