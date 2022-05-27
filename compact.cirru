@@ -12,40 +12,34 @@
                 store $ :store reel
                 states $ :states store
                 cursor $ or (:cursor states) ([])
-                state $ or (:data states)
+                ; state $ or (:data states)
                   {} (:content "\"") (:rendered? false)
               div
                 {} $ :style (merge ui/global ui/fullscreen ui/row)
                 div
                   {} $ :style (merge ui/expand ui/row)
-                  if (:rendered? state)
-                    comp-reader-ui $ :content state
+                  if (:rendered? store)
+                    comp-reader-ui $ :content store
                     textarea $ {}
-                      :value $ :content state
+                      :value $ :content store
                       :autofocus true
                       :placeholder "\"Paste text here, then hit \"Toggle\" button..."
                       :style $ merge ui/expand ui/textarea
                         {}
                           :border $ str "\"1px solid " (hsl 0 0 94)
                           :padding "\"40px 80px"
+                          :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
-                        d! cursor $ assoc state :content (:value e)
-                      :on-keydown $ fn (e d!)
-                        when
-                          and
-                            = 13 $ :key-code e
-                            :meta? e
-                          d! cursor $ update state :rendered? not
+                        d! :content $ :value e
                 a $ {}
                   :class-name $ str-spaced css/link css-toggle
                   :inner-text "\"Toggle"
-                  :on-click $ fn (e d!)
-                    d! cursor $ update state :rendered? not
+                  :on-click $ fn (e d!) (d! :toggle-rendered nil)
                 when dev? $ comp-reel (>> states :reel) reel ({})
         |comp-paragraph-ui $ quote
           defcomp comp-paragraph-ui (p)
             let
-                words $ -> (.!split p pattern-spaces) to-calcit-data
+                words $ -> (.!split p pattern-spaces) (to-calcit-data true)
                   filter $ fn (p)
                     not $ .blank? p
               div
@@ -64,17 +58,19 @@
         |comp-reader-ui $ quote
           defcomp comp-reader-ui (content)
             let
-                paragraphs $ -> (.!split content pattern-lines) to-calcit-data
+                paragraphs $ -> (.!split content pattern-lines) (to-calcit-data true)
                   filter $ fn (p)
                     not $ .blank? p
               div
-                {} $ :style ui/expand
+                {} $ :style
+                  merge ui/expand $ {}
+                    :background-color $ hsl 0 0 92
                 list->
-                  {} $ :style
-                    merge $ {} (:font-family ui/font-normal) (:font-size 16) (:padding "\"40px 80px") (:max-width 960) (:margin "\"0 auto")
+                  {} $ :class-name css-content-area
                   -> paragraphs $ map-indexed
                     fn (idx p)
                       [] idx $ memof1-call-by idx comp-paragraph-ui p
+                =< nil "\"40vh"
         |comp-word-ui $ quote
           defcomp comp-word-ui (w)
             let
@@ -89,14 +85,26 @@
                       hsl 0 0 $ +
                         &max 0 $ - 50 (* 5 len)
                         * 50 $ pow (/ idx len) 1.2
+        |css-content-area $ quote
+          defstyle css-content-area $ {}
+            "\"$0" $ {} (:font-family ui/font-normal) (:font-size 16) (:padding "\"40px 80px") (:max-width 960) (:margin "\"0 auto")
         |css-paragraph $ quote
           defstyle css-paragraph $ {}
-            "\"$0" $ {} (:padding "\"30px 30px") (:transition-duration "\"280ms") (:position :relative)
-              :border-left $ str "\"2px solid " (hsl 0 0 100)
-            "\"$0:focus" $ {}
-              :background-color $ hsl 190 40 96
+            "\"$0" $ {} (:padding "\"30px 30px") (:transition-duration "\"280ms") (:position :relative) (:border-radius "\"0px")
+              :background-color $ hsl 190 0 92
+              :border $ str "\"2px solid " (hsl 0 0 90)
+              :border-top-width 1
+              :border-bottom-width 1
+              :border-left $ str "\"2px solid " (hsl 0 0 90)
             "\"$0:hover" $ {}
-              :border-left-color $ hsl 190 90 90
+              :border-left-color $ hsl 190 20 96
+              :background-color $ hsl 190 0 95
+            "\"$0:focus" $ {}
+              :background-color $ hsl 190 0 100
+              :border-left $ str "\"2px solid " (hsl 0 0 100)
+              :box-shadow $ str "\"0 0 6px " (hsl 0 0 0 0.2)
+              :z-index 101
+              :border-radius "\"4px"
         |css-speech-button $ quote
           defstyle css-speech-button $ {}
             "\"$0" $ {} (:position :absolute) (:right 4) (:bottom 4) (:font-size 13) (:font-family ui/font-fancy)
@@ -149,6 +157,12 @@
                 raw $ js/localStorage.getItem (:storage-key config/site)
               when (some? raw)
                 dispatch! :hydrate-storage $ parse-cirru-edn raw
+            js/window.addEventListener "\"keydown" $ fn (event)
+              when
+                and
+                  = "\"e" $ .-key event
+                  .-metaKey event
+                dispatch! :toggle-rendered nil
             println "|App started."
         |mount-target $ quote
           def mount-target $ .!querySelector js/document |.app
@@ -183,6 +197,8 @@
           def store $ {}
             :states $ {}
               :cursor $ []
+            :content "\""
+            :rendered? false
       :ns $ quote (ns app.schema)
     |app.updater $ {}
       :defs $ {}
@@ -191,6 +207,11 @@
             case-default op
               do (println "\"unknown op:" op) store
               :states $ update-states store data
+              :content $ assoc store :content data
+              :toggle-rendered $ if
+                some? $ :rendered? store
+                update store :rendered? not
+                assoc store :rendered? true
               :hydrate-storage data
       :ns $ quote
         ns app.updater $ :require
