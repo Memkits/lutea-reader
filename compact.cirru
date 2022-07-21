@@ -53,8 +53,8 @@
                   :on-click $ fn (e d!)
                     if-let
                       key $ get-env "\"azure-key"
-                      speechQueue p key "\"en-US" $ fn ()
-                      nativeSpeechOne p "\"en-US"
+                      speechQueue p key lang $ fn ()
+                      nativeSpeechOne p lang
         |comp-reader-ui $ quote
           defcomp comp-reader-ui (content)
             let
@@ -123,7 +123,7 @@
           respo.comp.space :refer $ =<
           reel.comp.reel :refer $ comp-reel
           respo-md.comp.md :refer $ comp-md
-          app.config :refer $ dev?
+          app.config :refer $ dev? lang
           respo-ui.css :as css
           memof.once :refer $ memof1-call memof1-call-by
           "\"@memkits/azure-speech-util" :refer $ speechQueue nativeSpeechOne
@@ -131,6 +131,8 @@
       :defs $ {}
         |dev? $ quote
           def dev? $ = "\"dev" (get-env "\"mode" "\"release")
+        |lang $ quote
+          def lang $ get-env "\"lang" "\"en-US"
         |site $ quote
           def site $ {} (:storage-key "\"lutea-reader")
       :ns $ quote (ns app.config)

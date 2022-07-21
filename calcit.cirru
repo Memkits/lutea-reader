@@ -380,7 +380,7 @@
                                               |T $ {} (:at 1653639055518) (:by |rJG4IHzWf) (:text |speechQueue) (:type :leaf)
                                               |h $ {} (:at 1653638941900) (:by |rJG4IHzWf) (:text |p) (:type :leaf)
                                               |o $ {} (:at 1653639072030) (:by |rJG4IHzWf) (:text |key) (:type :leaf)
-                                              |p $ {} (:at 1653639241668) (:by |rJG4IHzWf) (:text "|\"en-US") (:type :leaf)
+                                              |p $ {} (:at 1658387398467) (:by |rJG4IHzWf) (:text |lang) (:type :leaf)
                                               |q $ {} (:at 1653639130349) (:by |rJG4IHzWf) (:type :expr)
                                                 :data $ {}
                                                   |T $ {} (:at 1653639093871) (:by |rJG4IHzWf) (:text |fn) (:type :leaf)
@@ -390,7 +390,7 @@
                                             :data $ {}
                                               |T $ {} (:at 1653639103275) (:by |rJG4IHzWf) (:text |nativeSpeechOne) (:type :leaf)
                                               |b $ {} (:at 1653639106462) (:by |rJG4IHzWf) (:text |p) (:type :leaf)
-                                              |h $ {} (:at 1653639108024) (:by |rJG4IHzWf) (:text "|\"en-US") (:type :leaf)
+                                              |h $ {} (:at 1658387400413) (:by |rJG4IHzWf) (:text |lang) (:type :leaf)
           |comp-reader-ui $ {} (:at 1653636316276) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1653636318629) (:by |rJG4IHzWf) (:text |defcomp) (:type :leaf)
@@ -926,6 +926,7 @@
                     |v $ {} (:at 1521954065004) (:by |root) (:type :expr)
                       :data $ {}
                         |j $ {} (:at 1521954067604) (:by |root) (:text |dev?) (:type :leaf)
+                        |n $ {} (:at 1658387391612) (:by |rJG4IHzWf) (:text |lang) (:type :leaf)
                 |z $ {} (:at 1653636249087) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
                     |T $ {} (:at 1653636255552) (:by |rJG4IHzWf) (:text |respo-ui.css) (:type :leaf)
@@ -964,6 +965,15 @@
                       |D $ {} (:at 1624469706777) (:by |rJG4IHzWf) (:text |get-env) (:type :leaf)
                       |T $ {} (:at 1624469708397) (:by |rJG4IHzWf) (:text "|\"mode") (:type :leaf)
                       |b $ {} (:at 1653635475022) (:by |rJG4IHzWf) (:text "|\"release") (:type :leaf)
+          |lang $ {} (:at 1658387361157) (:by |rJG4IHzWf) (:type :expr)
+            :data $ {}
+              |T $ {} (:at 1658387363832) (:by |rJG4IHzWf) (:text |def) (:type :leaf)
+              |b $ {} (:at 1658387361157) (:by |rJG4IHzWf) (:text |lang) (:type :leaf)
+              |h $ {} (:at 1658387361157) (:by |rJG4IHzWf) (:type :expr)
+                :data $ {}
+                  |T $ {} (:at 1658387375318) (:by |rJG4IHzWf) (:text |get-env) (:type :leaf)
+                  |b $ {} (:at 1658387377069) (:by |rJG4IHzWf) (:text "|\"lang") (:type :leaf)
+                  |h $ {} (:at 1658387381401) (:by |rJG4IHzWf) (:text "|\"en-US") (:type :leaf)
           |site $ {} (:at 1545933382603) (:by |root) (:type :expr)
             :data $ {}
               |T $ {} (:at 1518157345496) (:by |root) (:text |def) (:type :leaf)
