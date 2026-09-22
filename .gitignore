@@ -6,3 +6,6 @@ js-out/
 node_modules/
 dist/
 .yarn/*.gz
+dl-out
+.pnp.cjs
+.pnp.loader.mjs
