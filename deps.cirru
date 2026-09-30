@@ -1,7 +1,7 @@
-{} (:calcit-version |0.22.0-alpha.3) (:version |0.0.3)
+{} (:calcit-version |0.27.0) (:version |0.0.4)
   :dependencies $ {}
-    |calcit-lang/memof |0.0.33
-    |Respo/respo.calcit |0.16.112
-    |Respo/reel.calcit |0.6.30
-    |Respo/respo-markdown.calcit |0.4.43
-    |Respo/respo-ui.calcit |0.7.30
+    |calcit-lang/memof |0.0.36
+    |Respo/respo.calcit |0.16.114-alpha.5
+    |Respo/reel.calcit |0.6.33-alpha.2
+    |Respo/respo-markdown.calcit |0.4.46
+    |Respo/respo-ui.calcit |0.7.32-alpha.3

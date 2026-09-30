@@ -3,7 +3,7 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |app
   :entries $ {} $ :default
-    {} (:description |) (:init-fn 'app.main/main!) (:mode :native) (:reload-fn 'app.main/reload!)
+    {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |memof/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
       :type-slots $ {} $ :dispatch-op |app.schema/Op
@@ -40,8 +40,7 @@
                         :padding "|40px 80px"
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
-                        d! $ Op :content $ event-value
-                          assert-type e $ :: 'Map 'Tag 'Dynamic
+                        d! $ Op :content $ event-value e
                 a $ {}
                   :class-name $ str-spaced css/link css-toggle
                   :inner-text |Toggle
@@ -121,7 +120,7 @@
               |$0:focus $ {}
                 :background-color $ hsl 190 0 100
                 :border-left $ str "|2px solid " $ hsl 0 0 100
-                :box-shadow $ str "|0 0 6px " $ hsl 0 0 0 (%some 0.2)
+                :box-shadow $ str "|0 0 6px " $ hsl 0 0 0 (Option :some 0.2)
                 :z-index 101
                 :border-radius |4px
           :examples $ []
@@ -142,6 +141,7 @@
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'String)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
+            :features $ #{} :js-ffi
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
             unsafe-coerce (new js/RegExp pattern) RegexHost
