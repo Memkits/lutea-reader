@@ -5,7 +5,7 @@
   :entries $ {} $ :default
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |respo.calcit/ |memof/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
+      :modules $ [] |respo.calcit/ |memof/ |respo-ui.calcit/ |reel.calcit/
       :type-slots $ {} $ :dispatch-op |app.schema/Op
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
@@ -27,7 +27,7 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel)
             let
-                store $ decode-map-as (&map:get reel :store) app.schema/Store
+                store $ assert-type (&map:get reel :store) 'app.schema/Store
                 states store.:states
               div
                 {} $ :style $ merge ui/global ui/fullscreen ui/row
@@ -192,18 +192,17 @@
             :return $ :: 'List 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
-          :require ([] respo-ui.core :as ui)
-            [] respo-ui.core :refer $ [] hsl
-            [] respo.core :refer $ [] defcomp defeffect <> >> div button textarea span input list-> a
-            [] respo.css :refer $ [] defstyle
-            [] respo.comp.space :refer $ [] =<
-            [] reel.comp.reel :refer $ [] comp-reel
-            [] respo-md.comp.md :refer $ [] comp-md
-            [] app.config :refer $ [] dev? lang
-            [] respo-ui.css :as css
-            [] memof.once :refer $ [] memof1-call memof1-call-by
-            [] |@memkits/azure-speech-util :refer $ [] speechQueue nativeSpeechOne
-            [] app.schema :refer $ [] Op
+          :require (respo-ui.core :as ui)
+            respo-ui.core :refer $ [] hsl
+            respo.core :refer $ [] defcomp defeffect <> >> div button textarea span input list-> a
+            respo.css :refer $ [] defstyle
+            respo.comp.space :refer $ [] =<
+            reel.comp.reel :refer $ [] comp-reel
+            app.config :refer $ [] dev? lang
+            respo-ui.css :as css
+            memof.once :refer $ [] memof1-call-by
+            |@memkits/azure-speech-util :refer $ [] speechQueue nativeSpeechOne
+            app.schema :refer $ [] Op
     'app.config $ %{} 'FileEntry
       :defs $ {}
         'dev? $ %{} 'CodeEntry (:doc |)
@@ -247,9 +246,9 @@
             add-event-listener! |beforeunload $ fn (_) (persist-storage!)
             set-interval! persist-storage! 60000
             match
-              storage-get $ config/site :storage-key
+              storage-get $ option:unwrap $ get config/site :storage-key
               (:some raw)
-                dispatch! $ app.schema/Op :hydrate-storage $ decode-map-as (parse-cirru-edn raw) app.schema/Store
+                dispatch! $ app.schema/Op :hydrate-storage $ app.schema/decode-store (parse-cirru-edn raw)
               (:none) &unit
             add-event-listener! |keydown $ fn (event)
               when (toggle-shortcut? event)
@@ -267,8 +266,9 @@
           :schema $ :: 'js-ffi.browser/DomElementHost
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
-            storage-set! (config/site :storage-key)
-              format-cirru-edn $ decode-map-as (&map:get @*reel :store) app.schema/Store
+            storage-set!
+              option:unwrap $ get config/site :storage-key
+              format-cirru-edn $ &struct:to-map $ assert-type (&map:get @*reel :store) 'app.schema/Store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -306,16 +306,16 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
-            [] respo.core :refer $ [] render! clear-cache!
-            [] app.comp.container :refer $ [] comp-container
-            [] app.updater :refer $ [] updater
-            [] reel.util :refer $ [] listen-devtools!
-            [] reel.core :refer $ [] reel-updater refresh-reel
-            [] reel.schema :as reel-schema
-            [] app.config :as config
-            [] |./calcit.build-errors :default build-errors
-            [] |bottom-tip :default hud!
-            [] js-ffi.browser :refer $ [] query-selector add-event-listener! set-interval! storage-get storage-set!
+            respo.core :refer $ [] render! clear-cache!
+            app.comp.container :refer $ [] comp-container
+            app.updater :refer $ [] updater
+            reel.util :refer $ [] listen-devtools!
+            reel.core :refer $ [] reel-updater refresh-reel
+            reel.schema :as reel-schema
+            app.config :as config
+            |./calcit.build-errors.mjs :default build-errors
+            |bottom-tip :default hud!
+            js-ffi.browser :refer $ [] query-selector add-event-listener! set-interval! storage-get storage-set!
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Op $ %{} 'CodeEntry (:doc |)
@@ -344,6 +344,14 @@
             :rendered? 'Bool
           :examples $ []
           :schema $ :: 'StructDef
+        'decode-store $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn decode-store (raw)
+            if (struct? raw)
+              decode-map-as (&struct:to-map raw) app.schema/Store
+              decode-map-as raw app.schema/Store
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
+            :args $ [] 'Dynamic
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states
@@ -359,10 +367,10 @@
           :code $ quote $ defn updater (store op op-id op-time)
             match op
               (:states cursor data)
-                decode-map-as (update-states store cursor data) app.schema/Store
+                assert-type (update-states store cursor data) 'app.schema/Store
               (:content data) (assoc store :content data)
               (:toggle-rendered) (update store :rendered? not)
-              (:hydrate-storage data) (decode-map-as data app.schema/Store)
+              (:hydrate-storage data) (assert-type data 'app.schema/Store)
               _ $ do (println "|unknown op:" op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
