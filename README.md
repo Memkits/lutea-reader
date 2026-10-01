@@ -32,6 +32,10 @@ settings, without an extra CDN checker.
 Shared fonts/logo, language/configuration keys and original server paths stay
 unchanged. COS only uploads the generated frontend `dist` resources.
 
+CI 使用正式 COS action v1.2.0 内置 HTML 同域脚本/样式引用检查及公开字节/SHA-256 校验，不保留重复 CDN 构建测试。全部八项真实阅读/持久化/语音适配测试、严格入口及五个业务 namespace 公开定义检查保留，语音测试不请求付费服务。PR 资源按 PR/run/attempt 隔离，同组串行保留等待队列，原生产及服务器路径不变。
+
+`yarn dev` 编译一次再启动 Vite；需要实时编译时另开终端运行 `calcit calcit.cirru js -w`，不增加 concurrently。Calcit/procs 保持正式 0.27.0，仅在兼容正式模块存在时升级，不新增模块 hash 或机械降级 alpha。
+
 ### License
 
 MIT
