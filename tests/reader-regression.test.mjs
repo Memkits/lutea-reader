@@ -99,8 +99,10 @@ test("actual main persistence uses the original key and a compatible Map round t
 test("actual native speech path preserves language, content and host methods", () => {
   const previous = globalThis.window;
   const utterance = globalThis.SpeechSynthesisUtterance;
+  const azureKey = process.env["azure-key"];
   const calls = [];
   try {
+    delete process.env["azure-key"];
     globalThis.window = { speechSynthesis: { cancel() { calls.push("cancel"); }, speak(msg) { calls.push(msg); } } };
     globalThis.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
     app.speak_text_$x_("Native fixture", "en-US");
@@ -109,6 +111,7 @@ test("actual native speech path preserves language, content and host methods", (
     assert.equal(calls[1].lang, "en-US");
     assert.equal(calls[1].rate, 1.1);
   } finally {
+    if (azureKey === undefined) delete process.env["azure-key"]; else process.env["azure-key"] = azureKey;
     if (previous === undefined) delete globalThis.window; else globalThis.window = previous;
     if (utterance === undefined) delete globalThis.SpeechSynthesisUtterance; else globalThis.SpeechSynthesisUtterance = utterance;
   }

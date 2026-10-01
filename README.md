@@ -26,7 +26,7 @@ Storage regression tests cover legacy Map and typed Store decoding, invalid
 external data rejection and the unchanged `lutea-reader` key. Native speech
 uses browser fixtures; tests do not request Azure services or consume credits.
 
-Build with `VITE_BASE_URL=https://cos-sh.tiye.me/Memkits/lutea-reader/pr/ yarn vite build`
+Build with `VITE_BASE_URL=https://cos-sh.tiye.me/Memkits/lutea-reader/pr/9/ yarn vite build`
 with public upload verification handled by cos-upload-action's built-in verify
 settings, without an extra CDN checker.
 Shared fonts/logo, language/configuration keys and original server paths stay
