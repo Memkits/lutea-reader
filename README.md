@@ -27,8 +27,8 @@ external data rejection and the unchanged `lutea-reader` key. Native speech
 uses browser fixtures; tests do not request Azure services or consume credits.
 
 Build with `VITE_BASE_URL=https://cos-sh.tiye.me/Memkits/lutea-reader/pr/ yarn vite build`
-and run `node tests/check-cdn-path.mjs` with the same base. This validates
-local generated JS/CSS URLs; cos-upload-action verifies uploaded files publicly.
+with public upload verification handled by cos-upload-action's built-in verify
+settings, without an extra CDN checker.
 Shared fonts/logo, language/configuration keys and original server paths stay
 unchanged. COS only uploads the generated frontend `dist` resources.
 
