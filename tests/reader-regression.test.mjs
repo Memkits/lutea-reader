@@ -4,9 +4,9 @@ import { registerHooks } from "node:module";
 import * as c from "../js-out/calcit.core.mjs";
 import { store, decode_store, Op } from "../js-out/app.schema.mjs";
 import { updater } from "../js-out/app.updater.mjs";
-import { reel } from "../js-out/reel.schema.mjs";
+import { new_reel } from "../js-out/reel.typed.mjs";
 import { make_string } from "../js-out/respo.render.html.mjs";
-const t = c.init_tags(["store", "base", "states", "data", "content", "rendered?", "hydrate-storage", "toggle-rendered", "editor"]);
+const t = c.init_tags(["store", "base", "states", "data", "content", "rendered?", "hydrate-storage", "toggle-rendered", "editor", "reel/recall", "reel/run"]);
 const map = c._$n__$M_;
 const read = (value, key) => c.option_$o_unwrap(c.get(value, t[key]));
 const op = (key, ...args) => c._PCT__$o__$o_(Op, t[key], ...args);
@@ -41,7 +41,7 @@ try {
   if (originalSdk === undefined) delete globalThis.SpeechSDK; else globalThis.SpeechSDK = originalSdk;
 }
 test("actual initial Store renders without decoding a Struct as a Map", () => {
-  const root = c.assoc(c.assoc(reel, t.base, store), t.store, store);
+  const root = new_reel(store);
   assert.ok(make_string(app.comp_container(root)).includes("Toggle"));
   assert.equal(main.mount_target, mount);
 });
@@ -58,9 +58,10 @@ test("nominal content/toggle Enums retain actual reading content", () => {
   const changed = updater(store, op("content", "First paragraph\n\nSecond paragraph"), "fixture", 0);
   const shown = updater(changed, op("toggle-rendered"), "fixture2", 0);
   assert.equal(read(shown, "rendered?"), true);
-  const html = make_string(app.comp_container(c.assoc(reel, t.store, shown)));
+  const html = make_string(app.comp_container(new_reel(shown)));
   assert.ok(html.includes("Speech"));
   assert.equal(app.split_regex(read(shown, "content"), app.pattern_lines).toArray().length, 2);
+  assert.deepEqual(app.split_regex(":keyword", app.pattern_lines).toArray(), [":keyword"]);
 });
 test("legacy Maps and saved typed Stores validate once before hydration", () => {
   const legacy = map(t.states, map(), t.content, "Legacy text", t["rendered?"], true);
@@ -82,9 +83,19 @@ test("actual main persistence uses the original key and a compatible Map round t
   const priorWindow = globalThis.window;
   const writes = [];
   try {
-    globalThis.localStorage = { setItem(key, value) { writes.push([key, value]); } };
+    globalThis.localStorage = {
+      get length() { return writes.length; },
+      getItem() { return null; },
+      key() { return null; },
+      setItem(key, value) { writes.push([key, value]); },
+      removeItem() {},
+      clear() {},
+    };
     globalThis.window = { localStorage: globalThis.localStorage };
     main.dispatch_$x_(op("content", "Saved fixture"));
+    main.dispatch_$x_(op("reel/recall", 0));
+    assert.equal(read(read(c.deref(main._$s_reel), "store"), "content"), "");
+    main.dispatch_$x_(op("reel/run"));
     main.persist_storage_$x_();
     assert.equal(writes.length, 1);
     assert.equal(writes[0][0], "lutea-reader");

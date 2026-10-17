@@ -5,7 +5,7 @@
   :entries $ {} $ :default
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |respo.calcit/ |memof/ |respo-ui.calcit/ |reel.calcit/
+      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/
       :type-slots $ {} $ :dispatch-op |app.schema/Op
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
@@ -27,7 +27,7 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel)
             let
-                store $ assert-type (&map:get reel :store) 'app.schema/Store
+                store $ :store reel
                 states store.:states
               div
                 {} $ :style $ merge ui/global ui/fullscreen ui/row
@@ -46,10 +46,11 @@
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
                     d! $ Op :toggle-rendered
-                when dev? $ comp-reel (>> states :reel) reel $ {}
+                when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'app.schema/Reel
+            :args $ [] $ :: 'reel.typed/State 'Enum 'app.schema/Store
+            :features $ #{} :js-ffi
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -68,6 +69,7 @@
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'String
+            :features $ #{} :js-ffi
         'comp-reader-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-reader-ui (content)
             let
@@ -80,11 +82,12 @@
                 list->
                   {} $ :class-name css-content-area
                   -> paragraphs $ map-indexed $ fn (idx paragraph)
-                    [] idx $ memof1-call-by idx comp-paragraph-ui paragraph
+                    [] idx $ memo-comp-by idx comp-paragraph-ui paragraph
                 =< &unit |40vh
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'String
+            :features $ #{} :js-ffi
         'comp-word-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-word-ui (word)
             let
@@ -100,6 +103,7 @@
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'String
+            :features $ #{} :js-ffi
         'css-content-area $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-content-area
             {} $ |$0 $ {} (:font-family ui/font-normal) (:font-size 16) (:padding "|40px 80px") (:max-width 960) (:margin "|0 auto")
@@ -137,10 +141,14 @@
           :schema $ :: 'String
         'event-value $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn event-value (event)
-            assert-type (&map:get event :value) 'String
+            decode-map-as
+              .unwrap $ get
+                decode-map-as event $ :: 'Map 'Tag 'Dynamic
+                , :value
+              , 'String
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+            :args $ [] 'Dynamic
             :features $ #{} :js-ffi
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
@@ -180,10 +188,10 @@
             :features $ #{} :js-ffi
         'split-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn split-regex (text pattern)
-            assert-type
-              ->
+            decode-map-as
+              to-calcit-data
                 .split-regex (unsafe-coerce text StringHost) pattern
-                to-calcit-data true
+                , true
               :: 'List 'String
           :examples $ []
           :schema $ :: 'Fn $ {}
@@ -193,16 +201,15 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require (respo-ui.core :as ui)
-            respo-ui.core :refer $ [] hsl
-            respo.core :refer $ [] defcomp defeffect <> >> div button textarea span input list-> a
-            respo.css :refer $ [] defstyle
-            respo.comp.space :refer $ [] =<
-            reel.comp.reel :refer $ [] comp-reel
-            app.config :refer $ [] dev? lang
+            respo-ui.core :refer $ hsl
+            respo.core :refer $ defcomp <> >> div textarea list-> a memo-comp-by
+            respo.css :refer $ defstyle
+            respo.comp.space :refer $ =<
+            reel.comp.reel :refer $ comp-typed-reel
+            app.config :refer $ dev? lang
             respo-ui.css :as css
-            memof.once :refer $ [] memof1-call-by
-            |@memkits/azure-speech-util :refer $ [] speechQueue nativeSpeechOne
-            app.schema :refer $ [] Op
+            |@memkits/azure-speech-util :refer $ speechQueue nativeSpeechOne
+            app.schema :refer $ Op
     'app.config $ %{} 'FileEntry
       :defs $ {}
         'dev? $ %{} 'CodeEntry (:doc |)
@@ -225,23 +232,32 @@
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *reel
-            -> reel-schema/reel (assoc :base app.schema/store) (assoc :store app.schema/store)
+          :code $ quote $ defref *reel (typed/new-reel app.schema/store)
           :examples $ []
-          :schema $ :: 'Ref 'app.schema/Reel
+          :schema $ :: 'Ref $ :: 'reel.typed/State 'Enum 'app.schema/Store
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
-            when config/dev? $ println |Dispatch: op
-            reset! *reel $ assert-type (reel-updater updater @*reel op) 'app.schema/Reel
+            if (enum? op)
+              do
+                when config/dev? $ println |Dispatch: op
+                match (typed/decode-control op)
+                  (:some control)
+                    reset! *reel $ typed/apply-control updater @*reel control
+                  (:none)
+                    reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
+                , &unit
+              raise |Expected-Enum-operation
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Enum
+            :args $ [] 'Dynamic
+            :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             if config/dev? $ load-console-formatter!
             render-app!
-            add-watch *reel :changes $ fn (reel prev) (render-app!)
+            add-watch! *reel :changes $ fn (reel prev) (render-app!)
             listen-devtools! |k dispatch!
             add-event-listener! |beforeunload $ fn (_) (persist-storage!)
             set-interval! persist-storage! 60000
@@ -261,14 +277,14 @@
             :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
-            option:unwrap $ query-selector |.app
+            .unwrap $ dom/query-selector |.app
           :examples $ []
-          :schema $ :: 'js-ffi.browser/DomElementHost
+          :schema $ :: 'respo.dom/DomElement
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             storage-set!
-              option:unwrap $ get config/site :storage-key
-              format-cirru-edn $ &struct:to-map $ assert-type (&map:get @*reel :store) 'app.schema/Store
+              .unwrap $ get config/site :storage-key
+              format-cirru-edn $ &struct:to-map $ :store @*reel
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -276,18 +292,21 @@
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
-              do (remove-watch *reel :changes) (clear-cache!)
-                add-watch *reel :changes $ fn (reel prev) (render-app!)
-                reset! *reel $ assert-type (refresh-reel @*reel app.schema/store updater) 'app.schema/Reel
+              do (remove-watch! *reel :changes) (clear-cache!)
+                add-watch! *reel :changes $ fn (reel prev) (render-app!)
+                reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
-              hud! |error build-errors
+                , &unit
+              do (hud! |error build-errors) &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
             :features $ #{} :js-ffi
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
-            render! mount-target (comp-container @*reel) dispatch!
+            render-with! mount-target
+              fn () $ comp-container @*reel
+              , dispatch!
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -306,16 +325,17 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
-            respo.core :refer $ [] render! clear-cache!
-            app.comp.container :refer $ [] comp-container
-            app.updater :refer $ [] updater
-            reel.util :refer $ [] listen-devtools!
-            reel.core :refer $ [] reel-updater refresh-reel
-            reel.schema :as reel-schema
+            respo.core :refer $ render-with! clear-cache!
+            app.comp.container :refer $ comp-container
+            app.updater :refer $ updater
+            reel.util :refer $ listen-devtools!
+            reel.typed :as typed
+            js-ffi.shared :as host
+            respo.ffi.browser :as dom
             app.config :as config
             |./calcit.build-errors.mjs :default build-errors
             |bottom-tip :default hud!
-            js-ffi.browser :refer $ [] query-selector add-event-listener! set-interval! storage-get storage-set!
+            js-ffi.browser :refer $ add-event-listener! set-interval! storage-get storage-set!
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Op $ %{} 'CodeEntry (:doc |)
@@ -333,13 +353,9 @@
             :reel/remove 'Number
           :examples $ []
           :schema $ :: 'EnumDef
-        'Reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def Reel &unit
-          :examples $ []
-          :schema $ :: 'Map 'Tag 'Dynamic
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ :: 'Map 'Tag 'Dynamic
+            :states $ :: 'Map 'Dynamic 'Dynamic
             :content 'String
             :rendered? 'Bool
           :examples $ []
@@ -367,14 +383,22 @@
           :code $ quote $ defn updater (store op op-id op-time)
             match op
               (:states cursor data)
-                assert-type (update-states store cursor data) 'app.schema/Store
-              (:content data) (assoc store :content data)
+                assoc store :states $ decode-map-as
+                  update-state-tree (:states store)
+                    decode-map-as cursor $ :: 'List 'Dynamic
+                    , data
+                  :: 'Map 'Dynamic 'Dynamic
+              (:content data)
+                assoc store :content $ decode-map-as data 'String
               (:toggle-rendered) (update store :rendered? not)
-              (:hydrate-storage data) (assert-type data 'app.schema/Store)
+              (:hydrate-storage data) (app.schema/decode-store data)
               _ $ do (println "|unknown op:" op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
             :args $ [] 'app.schema/Store 'Enum 'String 'Number
+            :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
-          :require $ respo.cursor :refer $ update-states
+          :require
+            respo.cursor :refer $ update-state-tree
+            app.schema :as schema
