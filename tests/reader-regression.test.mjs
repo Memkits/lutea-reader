@@ -61,6 +61,7 @@ test("nominal content/toggle Enums retain actual reading content", () => {
   const html = make_string(app.comp_container(new_reel(shown)));
   assert.ok(html.includes("Speech"));
   assert.equal(app.split_regex(read(shown, "content"), app.pattern_lines).toArray().length, 2);
+  assert.deepEqual(app.split_regex(":keyword", app.pattern_lines).toArray(), [":keyword"]);
 });
 test("legacy Maps and saved typed Stores validate once before hydration", () => {
   const legacy = map(t.states, map(), t.content, "Legacy text", t["rendered?"], true);

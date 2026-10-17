@@ -189,7 +189,9 @@
         'split-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn split-regex (text pattern)
             decode-map-as
-              to-calcit-data $ .split-regex (unsafe-coerce text StringHost) pattern
+              to-calcit-data
+                .split-regex (unsafe-coerce text StringHost) pattern
+                , true
               :: 'List 'String
           :examples $ []
           :schema $ :: 'Fn $ {}
@@ -390,7 +392,7 @@
                 assoc store :content $ decode-map-as data 'String
               (:toggle-rendered) (update store :rendered? not)
               (:hydrate-storage data) (app.schema/decode-store data)
-              _ store
+              _ $ do (println "|unknown op:" op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
             :args $ [] 'app.schema/Store 'Enum 'String 'Number
