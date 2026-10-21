@@ -18,7 +18,9 @@ UI 0.8.0、JS-FFI 0.2.5，Router 0.8.37 为传递依赖。请重新安装完整�
 
 同时修复恢复顺序：先读取/解析/解码/hydrate，再首次渲染、关闭保存和定时保存注册。
 恢复失败会阻止启动并保留原值，不自动清空/回退/修复；见 [#13](https://github.com/Memkits/lutea-reader/issues/13)。
-文本/段落算法、公开 Store/Op、存档 key/格式和语音配置不变。原八项业务测试保留，
+另外修复 [#15](https://github.com/Memkits/lutea-reader/issues/15)：阅读视图恢复英文词间空格，
+保留原分词和词级渐变，连续空白按原分词合同显示为一个空格；编辑器原文不改写。
+公开 Store/Op、存档 key/格式和语音配置不变。原八项业务测试保留，
 不配置真实密钥或请求远端语音服务。保留 all-defs/完整 strict，移除被覆盖的五 namespace 检查；
 不新增脚本、预算、强转或 concurrently。页面标题改为 Lutea Reader，COS 内置 verify 和前端路径不变。
 不合并、部署或发版；失败存档专项浏览器回归另行验收，不以正常页面成功代替。

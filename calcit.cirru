@@ -60,7 +60,7 @@
               div
                 {} (:class-name css-paragraph) (:tab-index 0)
                 list-> ({})
-                  -> (join words |)
+                  -> (join words "| ")
                     map-indexed $ fn (j word)
                       [] j $ if (= word "| ") (<> "| ") (comp-word-ui word)
                 a $ {} (:inner-text |Speech)
