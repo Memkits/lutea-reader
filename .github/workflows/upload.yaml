@@ -58,7 +58,6 @@ jobs:
         test ! -e compact.cirru
         test ! -e package.cirru
         calcit calcit.cirru --check-only --all-defs
-        calcit calcit.cirru --check-only --ns app.comp.container --ns app.config --ns app.main --ns app.schema --ns app.updater --summary-only --format json
         calcit calcit.cirru fix --workflow strict --verify
 
     - name: Select CDN asset path

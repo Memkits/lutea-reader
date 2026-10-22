@@ -60,7 +60,7 @@
               div
                 {} (:class-name css-paragraph) (:tab-index 0)
                 list-> ({})
-                  -> (join words |)
+                  -> (join words "| ")
                     map-indexed $ fn (j word)
                       [] j $ if (= word "| ") (<> "| ") (comp-word-ui word)
                 a $ {} (:inner-text |Speech)
@@ -256,16 +256,16 @@
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             if config/dev? $ load-console-formatter!
-            render-app!
-            add-watch! *reel :changes $ fn (reel prev) (render-app!)
-            listen-devtools! |k dispatch!
-            add-event-listener! |beforeunload $ fn (_) (persist-storage!)
-            set-interval! persist-storage! 60000
             match
               storage-get $ option:unwrap $ get config/site :storage-key
               (:some raw)
                 dispatch! $ app.schema/Op :hydrate-storage $ app.schema/decode-store (parse-cirru-edn raw)
               (:none) &unit
+            render-app!
+            add-watch! *reel :changes $ fn (reel prev) (render-app!)
+            listen-devtools! |k dispatch!
+            add-event-listener! |beforeunload $ fn (_) (persist-storage!)
+            set-interval! persist-storage! 60000
             add-event-listener! |keydown $ fn (event)
               when (toggle-shortcut? event)
                 dispatch! $ app.schema/Op :toggle-rendered
