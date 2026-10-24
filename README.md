@@ -12,18 +12,22 @@ Options:
 
 ### 本轮使用者影响：正式 Calcit 0.30.1
 
-CLI/procs 配对正式 **0.30.1**，直接依赖固定为已发布的 Respo 0.16.124、Reel 0.6.41、
-UI 0.8.0、JS-FFI 0.2.5，Router 0.8.37 为传递依赖。请重新安装完整模块图、生成 JS 并刷新，
+CLI/procs 继续配对正式 **0.30.1**，直接依赖固定为已发布的 Respo 0.16.126、Reel 0.6.42、
+UI 0.8.1、JS-FFI 0.2.6，Router 0.8.38 为传递依赖，Vite 固定 8.3.3。请重新安装完整模块图、生成 JS 并刷新，
 不要混用 alpha 缓存；UI 升级可能有样式差异，不承诺逐像素相同。
 
-同时修复恢复顺序：先读取/解析/解码/hydrate，再首次渲染、关闭保存和定时保存注册。
+此前已修复的恢复顺序保持：先读取/解析/解码/hydrate，再首次渲染、关闭保存和定时保存注册。
 恢复失败会阻止启动并保留原值，不自动清空/回退/修复；见 [#13](https://github.com/Memkits/lutea-reader/issues/13)。
-另外修复 [#15](https://github.com/Memkits/lutea-reader/issues/15)：阅读视图恢复英文词间空格，
+此前 [#15](https://github.com/Memkits/lutea-reader/issues/15) 的修复保持：阅读视图恢复英文词间空格，
 保留原分词和词级渐变，连续空白按原分词合同显示为一个空格；编辑器原文不改写。
 公开 Store/Op、存档 key/格式和语音配置不变。原八项业务测试保留，
 不配置真实密钥或请求远端语音服务。保留 all-defs/完整 strict，移除被覆盖的五 namespace 检查；
 不新增脚本、预算、强转或 concurrently。页面标题改为 Lutea Reader，COS 内置 verify 和前端路径不变。
 不合并、部署或发版；失败存档专项浏览器回归另行验收，不以正常页面成功代替。
+
+本轮将 8 处旧 Map/Option/数量调用改为方法，String 数量用首选 `.len`；默认值与阅读算法不变。DOM 事件、watcher 和宿主回调按真实合同标注，`event-value` 收紧为 Map 事件并去掉内部重复 Map 解码，仍显式检查 String 值。直接调用该 helper 的外部代码应传规范 Respo Map 事件。
+⌘E 入口改用正式 `keyboard-event-host` 受检适配后传给准确的 KeyboardEventHost 谓词，应用 unsafe 5→4；其余 String/RegExp/语音函数边界仍显式保留，不伪造零 unsafe。14 处静态 CSS 长度/关键字改为等价 String，词级渐变与空白处理不变。
+删除旧 procs 预批准、全量 Git 仓库批准、关闭年龄隔离及显式开启脚本的项目级覆盖，使用普通安装策略；不新增安装豁免、预算、验证脚本或测试框架。语音 SDK 和适配包版本保持，浏览器验收不点击 Speech、不使用真实 key 或调用语音服务。
 
 ### 历史：此前已合并的源码迁移
 
