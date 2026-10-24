@@ -30,21 +30,29 @@
                 store $ :store reel
                 states store.:states
               div
-                {} $ :style $ merge ui/global ui/fullscreen ui/row
+                {} $ :style $ .merge ui/global ui/fullscreen ui/row
                 div
-                  {} $ :style $ merge ui/expand ui/row
+                  {} $ :style $ .merge ui/expand ui/row
                   if store.:rendered? (comp-reader-ui store.:content)
                     textarea $ {} (:value store.:content) (:autofocus true) (:placeholder "|Paste text here, then hit \"Toggle\" button...")
-                      :style $ merge ui/expand ui/textarea $ {}
+                      :style $ .merge ui/expand ui/textarea $ {}
                         :border $ str "|1px solid " $ hsl 0 0 94
                         :padding "|40px 80px"
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
+                        hint-fn $ {} (:return 'Unit)
+                          :args $ [] (:: 'Map 'Tag 'Dynamic)
+                            :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
+                              :args $ [] 'Dynamic
                         d! $ Op :content $ event-value e
                 a $ {}
                   :class-name $ str-spaced css/link css-toggle
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
+                    hint-fn $ {} (:return 'Unit)
+                      :args $ [] (:: 'Map 'Tag 'Dynamic)
+                        :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
+                          :args $ [] 'Dynamic
                     d! $ Op :toggle-rendered
                 when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
@@ -65,7 +73,12 @@
                       [] j $ if (= word "| ") (<> "| ") (comp-word-ui word)
                 a $ {} (:inner-text |Speech)
                   :class-name $ str-spaced css/link css-speech-button
-                  :on-click $ fn (e d!) (speak-text! p lang)
+                  :on-click $ fn (e d!)
+                    hint-fn $ {} (:return 'Unit)
+                      :args $ [] (:: 'Map 'Tag 'Dynamic)
+                        :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
+                          :args $ [] 'Dynamic
+                    speak-text! p lang
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'String
@@ -77,7 +90,7 @@
                   filter $ fn (paragraph)
                     not $ blank? paragraph
               div
-                {} $ :style $ merge ui/expand
+                {} $ :style $ .merge ui/expand
                   {} $ :background-color $ hsl 0 0 92
                 list->
                   {} $ :class-name css-content-area
@@ -92,9 +105,9 @@
           :code $ quote $ defcomp comp-word-ui (word)
             let
                 chars $ split word |
-                len $ count word
+                len $ .len word
               list->
-                {} $ :style $ {} (:display :inline-block)
+                {} $ :style $ {} (:display |inline-block)
                 map-indexed chars $ fn (idx char)
                   [] idx $ <> char $ {}
                     :color $ hsl 0 0 $ +
@@ -106,17 +119,17 @@
             :features $ #{} :js-ffi
         'css-content-area $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-content-area
-            {} $ |$0 $ {} (:font-family ui/font-normal) (:font-size 16) (:padding "|40px 80px") (:max-width 960) (:margin "|0 auto")
+            {} $ |$0 $ {} (:font-family ui/font-normal) (:font-size |16px) (:padding "|40px 80px") (:max-width |960px) (:margin "|0 auto")
           :examples $ []
           :schema $ :: 'String
         'css-paragraph $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-paragraph
             {}
-              |$0 $ {} (:padding "|30px 30px") (:transition-duration |280ms) (:position :relative) (:border-radius |0px)
+              |$0 $ {} (:padding "|30px 30px") (:transition-duration |280ms) (:position |relative) (:border-radius |0px)
                 :background-color $ hsl 190 0 92
                 :border $ str "|2px solid " $ hsl 0 0 90
-                :border-top-width 1
-                :border-bottom-width 1
+                :border-top-width |1px
+                :border-bottom-width |1px
                 :border-left $ str "|2px solid " $ hsl 0 0 90
               |$0:hover $ {}
                 :border-left-color $ hsl 190 20 96
@@ -125,30 +138,28 @@
                 :background-color $ hsl 190 0 100
                 :border-left $ str "|2px solid " $ hsl 0 0 100
                 :box-shadow $ str "|0 0 6px " $ hsl 0 0 0 (Option :some 0.2)
-                :z-index 101
+                :z-index |101
                 :border-radius |4px
           :examples $ []
           :schema $ :: 'String
         'css-speech-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-speech-button
-            {} $ |$0 $ {} (:position :absolute) (:right 4) (:bottom 4) (:font-size 13) (:font-family ui/font-fancy)
+            {} $ |$0 $ {} (:position |absolute) (:right |4px) (:bottom |4px) (:font-size |13px) (:font-family ui/font-fancy)
           :examples $ []
           :schema $ :: 'String
         'css-toggle $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-toggle
-            {} $ |$0 $ {} (:position :fixed) (:top 20) (:right 20)
+            {} $ |$0 $ {} (:position |fixed) (:top |20px) (:right |20px)
           :examples $ []
           :schema $ :: 'String
         'event-value $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn event-value (event)
             decode-map-as
-              .unwrap $ get
-                decode-map-as event $ :: 'Map 'Tag 'Dynamic
-                , :value
+              .unwrap $ get event :value
               , 'String
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] 'Dynamic
+            :args $ [] $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
@@ -214,12 +225,12 @@
       :defs $ {}
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
-            = |dev $ option:unwrap-or (get-env |mode) |release
+            = |dev $ .unwrap-or (get-env |mode) |release
           :examples $ []
           :schema $ :: 'Bool
         'lang $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def lang
-            option:unwrap-or (get-env |lang) |en-US
+            .unwrap-or (get-env |lang) |en-US
           :examples $ []
           :schema $ :: 'String
         'site $ %{} 'CodeEntry (:doc |)
@@ -257,17 +268,26 @@
             println "|Running mode:" $ if config/dev? |dev |release
             if config/dev? $ load-console-formatter!
             match
-              storage-get $ option:unwrap $ get config/site :storage-key
+              storage-get $ .unwrap $ get config/site :storage-key
               (:some raw)
                 dispatch! $ app.schema/Op :hydrate-storage $ app.schema/decode-store (parse-cirru-edn raw)
               (:none) &unit
             render-app!
-            add-watch! *reel :changes $ fn (reel prev) (render-app!)
+            add-watch! *reel :changes $ fn (reel prev)
+              hint-fn $ {} (:return 'Unit)
+                :args $ [] (:: 'reel.typed/State 'Enum 'app.schema/Store) (:: 'reel.typed/State 'Enum 'app.schema/Store)
+              render-app!
             listen-devtools! |k dispatch!
-            add-event-listener! |beforeunload $ fn (_) (persist-storage!)
+            add-event-listener! |beforeunload $ fn (_)
+              hint-fn $ {} (:return 'Unit)
+                :args $ [] 'js-ffi.browser/EventHost
+              persist-storage!
             set-interval! persist-storage! 60000
             add-event-listener! |keydown $ fn (event)
-              when (toggle-shortcut? event)
+              hint-fn $ {} (:return 'Unit)
+                :args $ [] 'js-ffi.browser/EventHost
+              when
+                toggle-shortcut? $ keyboard-event-host event
                 dispatch! $ app.schema/Op :toggle-rendered
               , &unit
             println "|App started."
@@ -293,7 +313,10 @@
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
-                add-watch! *reel :changes $ fn (reel prev) (render-app!)
+                add-watch! *reel :changes $ fn (reel prev)
+                  hint-fn $ {} (:return 'Unit)
+                    :args $ [] (:: 'reel.typed/State 'Enum 'app.schema/Store) (:: 'reel.typed/State 'Enum 'app.schema/Store)
+                  render-app!
                 reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
                 , &unit
@@ -313,14 +336,12 @@
             :features $ #{} :js-ffi
         'toggle-shortcut? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn toggle-shortcut? (event)
-            let
-                keyboard $ unsafe-coerce event js-ffi.browser/KeyboardEventHost
-              and
-                = |e $ keyboard :key
-                keyboard :meta-key?
+            and
+              = |e $ event :key
+              event :meta-key?
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ [] 'js-ffi.browser/EventHost
+            :args $ [] 'js-ffi.browser/KeyboardEventHost
             :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
@@ -335,7 +356,7 @@
             app.config :as config
             |./calcit.build-errors.mjs :default build-errors
             |bottom-tip :default hud!
-            js-ffi.browser :refer $ add-event-listener! set-interval! storage-get storage-set!
+            js-ffi.browser :refer $ add-event-listener! set-interval! storage-get storage-set! keyboard-event-host
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Op $ %{} 'CodeEntry (:doc |)
