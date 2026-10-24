@@ -49,16 +49,17 @@ jobs:
         caps --ci --strict
         yarn install --immutable
         caps deps.cirru verify --toolchain
+        git diff --quiet -- deps.cirru package.json yarn.lock .yarnrc.yml
 
     - name: Validate Calcit snapshot and types
       run: |
         set -euo pipefail
         calcit calcit.cirru edit format
-        git diff --exit-code -- calcit.cirru
+        git diff --quiet -- calcit.cirru
         test ! -e compact.cirru
         test ! -e package.cirru
         calcit calcit.cirru --check-only --all-defs
-        calcit calcit.cirru fix --workflow strict --verify
+        calcit calcit.cirru fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
 
     - name: Select CDN asset path
       id: asset-path
