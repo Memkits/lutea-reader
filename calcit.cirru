@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/
-      :type-slots $ {} $ :dispatch-op |app.schema/Op
+      :type-slots $ {} $ :dispatch-op |app.schema/DispatchOp
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
@@ -14,16 +14,14 @@
           :code $ quote $ deftrait RegexHost
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'StringHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait StringHost
-            .split-regex $ :: 'Fn $ {}
-              :args $ [] 'app.comp.container/StringHost 'app.comp.container/RegexHost
-              :return 'JsObject
+            .split-regex $ quote $ Fn app.comp.container/StringHost app.comp.container/RegexHost (-> JsObject)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :split-regex |split
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel)
             let
@@ -40,25 +38,21 @@
                         :padding "|40px 80px"
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
-                        hint-fn $ {} (:return 'Unit)
-                          :args $ [] (:: 'Map 'Tag 'Dynamic)
-                            :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
-                              :args $ [] 'Dynamic
+                        hint-fn $ Fn (Map Tag Dynamic)
+                          Fn Enum $ -> Unit
+                          -> Unit
                         d! $ Op :content $ event-value e
                 a $ {}
                   :class-name $ str-spaced css/link css-toggle
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
-                    hint-fn $ {} (:return 'Unit)
-                      :args $ [] (:: 'Map 'Tag 'Dynamic)
-                        :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
-                          :args $ [] 'Dynamic
+                    hint-fn $ Fn (Map Tag Dynamic)
+                      Fn Enum $ -> Unit
+                      -> Unit
                     d! $ Op :toggle-rendered
                 when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] $ :: 'reel.typed/State 'Enum 'app.schema/Store
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (reel.typed/State Enum app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -68,21 +62,18 @@
               div
                 {} (:class-name css-paragraph) (:tab-index 0)
                 list-> ({})
-                  -> (join words "| ")
+                  -> (intersperse words "| ")
                     map-indexed $ fn (j word)
                       [] j $ if (= word "| ") (<> "| ") (comp-word-ui word)
                 a $ {} (:inner-text |Speech)
                   :class-name $ str-spaced css/link css-speech-button
                   :on-click $ fn (e d!)
-                    hint-fn $ {} (:return 'Unit)
-                      :args $ [] (:: 'Map 'Tag 'Dynamic)
-                        :: 'Fn $ {} (:rest 'Dynamic) (:return 'Unit)
-                          :args $ [] 'Dynamic
+                    hint-fn $ Fn (Map Tag Dynamic)
+                      Fn Enum $ -> Unit
+                      -> Unit
                     speak-text! p lang
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
         'comp-reader-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-reader-ui (content)
             let
@@ -98,9 +89,7 @@
                     [] idx $ memo-comp-by idx comp-paragraph-ui paragraph
                 =< &unit |40vh
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
         'comp-word-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-word-ui (word)
             let
@@ -114,14 +103,12 @@
                       &max 0 $ - 50 $ * 5 len
                       * 50 $ pow (/ idx len) 1.2
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
         'css-content-area $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-content-area
             {} $ |$0 $ {} (:font-family ui/font-normal) (:font-size |16px) (:padding "|40px 80px") (:max-width |960px) (:margin "|0 auto")
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
         'css-paragraph $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-paragraph
             {}
@@ -141,62 +128,54 @@
                 :z-index |101
                 :border-radius |4px
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
         'css-speech-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-speech-button
             {} $ |$0 $ {} (:position |absolute) (:right |4px) (:bottom |4px) (:font-size |13px) (:font-family ui/font-fancy)
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
         'css-toggle $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle css-toggle
             {} $ |$0 $ {} (:position |fixed) (:top |20px) (:right |20px)
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
         'event-value $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn event-value (event)
             decode-map-as
               .unwrap $ get event :value
               , 'String
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> String) (:features :js-ffi)
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
             unsafe-coerce (new js/RegExp pattern) RegexHost
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.comp.container/RegexHost)
-            :args $ [] 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String (-> app.comp.container/RegexHost) (:features :js-ffi)
         'pattern-lines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def pattern-lines (make-regex |\n\n+)
           :examples $ []
-          :schema $ :: 'app.comp.container/RegexHost
+          :schema $ quote app.comp.container/RegexHost
         'pattern-spaces $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def pattern-spaces (make-regex |\s+)
           :examples $ []
-          :schema $ :: 'app.comp.container/RegexHost
+          :schema $ quote app.comp.container/RegexHost
         'speak-text! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn speak-text! (text language)
             match (get-env |azure-key)
               (:some key)
                 let
-                    speak-queue $ unsafe-coerce speechQueue $ :: 'Fn
-                      {} (:return 'Unit)
-                        :args $ [] 'String 'String 'String $ :: 'Fn
-                          {} (:return 'Unit)
-                            :args $ []
+                    speak-queue $ unsafe-coerce speechQueue $ quote
+                      Fn String String String
+                        Fn $ -> Unit
+                        -> Unit
                   speak-queue text key language $ fn () &unit
               (:none)
                 let
-                    speak-native $ unsafe-coerce nativeSpeechOne $ :: 'Fn
-                      {} (:return 'Unit)
-                        :args $ [] 'String 'String
+                    speak-native $ unsafe-coerce nativeSpeechOne $ quote
+                      Fn String String $ -> Unit
                   speak-native text language
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'String 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String String (-> Unit) (:features :js-ffi)
         'split-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn split-regex (text pattern)
             decode-map-as
@@ -205,10 +184,9 @@
                 , true
               :: 'List 'String
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'String 'app.comp.container/RegexHost
-            :features $ #{} :js-ffi
-            :return $ :: 'List 'String
+          :schema $ quote $ Fn String app.comp.container/RegexHost
+            -> $ List String
+            :features :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require (respo-ui.core :as ui)
@@ -227,17 +205,17 @@
           :code $ quote $ def dev?
             = |dev $ .unwrap-or (get-env |mode) |release
           :examples $ []
-          :schema $ :: 'Bool
+          :schema $ quote Bool
         'lang $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def lang
             .unwrap-or (get-env |lang) |en-US
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
         'site $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def site
             {} $ :storage-key |lutea-reader
           :examples $ []
-          :schema $ :: 'Map 'Tag 'String
+          :schema $ quote $ Map Tag String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.config
     'app.main $ %{} 'FileEntry
@@ -245,7 +223,7 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel (typed/new-reel app.schema/store)
           :examples $ []
-          :schema $ :: 'Ref $ :: 'reel.typed/State 'Enum 'app.schema/Store
+          :schema $ quote $ Ref (reel.typed/State Enum app.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             if (enum? op)
@@ -260,9 +238,7 @@
               raise |Expected-Enum-operation
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -274,75 +250,63 @@
               (:none) &unit
             render-app!
             add-watch! *reel :changes $ fn (reel prev)
-              hint-fn $ {} (:return 'Unit)
-                :args $ [] (:: 'reel.typed/State 'Enum 'app.schema/Store) (:: 'reel.typed/State 'Enum 'app.schema/Store)
+              hint-fn $ Fn (reel.typed/State Enum app.schema/Store) (reel.typed/State Enum app.schema/Store) (-> Unit)
               render-app!
             listen-devtools! |k dispatch!
             add-event-listener! |beforeunload $ fn (_)
-              hint-fn $ {} (:return 'Unit)
-                :args $ [] 'js-ffi.browser/EventHost
+              hint-fn $ Fn js-ffi.browser/EventHost $ -> Unit
               persist-storage!
             set-interval! persist-storage! 60000
             add-event-listener! |keydown $ fn (event)
-              hint-fn $ {} (:return 'Unit)
-                :args $ [] 'js-ffi.browser/EventHost
+              hint-fn $ Fn js-ffi.browser/EventHost $ -> Unit
               when
                 toggle-shortcut? $ keyboard-event-host event
                 dispatch! $ app.schema/Op :toggle-rendered
               , &unit
             println "|App started."
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
             .unwrap $ dom/query-selector |.app
           :examples $ []
-          :schema $ :: 'respo.dom/DomElement
+          :schema $ quote respo.dom/DomElement
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             storage-set!
               .unwrap $ get config/site :storage-key
               format-cirru-edn $ &struct:to-map $ :store @*reel
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ {} (:return 'Unit)
-                    :args $ [] (:: 'reel.typed/State 'Enum 'app.schema/Store) (:: 'reel.typed/State 'Enum 'app.schema/Store)
+                  hint-fn $ Fn (reel.typed/State Enum app.schema/Store) (reel.typed/State Enum app.schema/Store) (-> Unit)
                   render-app!
                 reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
                 , &unit
               do (hud! |error build-errors) &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render-with! mount-target
               fn () $ comp-container @*reel
-              , dispatch!
+              fn (op)
+                hint-fn $ Fn Enum $ -> Unit
+                dispatch! op
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'toggle-shortcut? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn toggle-shortcut? (event)
             and
               = |e $ event :key
               event :meta-key?
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ [] 'js-ffi.browser/KeyboardEventHost
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn js-ffi.browser/KeyboardEventHost (-> Bool) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -359,9 +323,16 @@
             js-ffi.browser :refer $ add-event-listener! set-interval! storage-get storage-set! keyboard-event-host
     'app.schema $ %{} 'FileEntry
       :defs $ {}
+        'DispatchOp $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ def DispatchOp
+            :: :states ([]) nil
+          :examples $ []
+          :schema $ quote Enum
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op
-            :states (:: 'List 'Dynamic) 'Dynamic
+            :states
+              quote $ List Dynamic
+              , 'Dynamic
             :content 'String
             :toggle-rendered
             :hydrate-storage 'app.schema/Store
@@ -373,29 +344,28 @@
             :reel/reset
             :reel/remove 'Number
           :examples $ []
-          :schema $ :: 'EnumDef
+          :schema $ quote EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ :: 'Map 'Dynamic 'Dynamic
+            :states $ quote $ Map Dynamic Dynamic
             :content 'String
             :rendered? 'Bool
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'decode-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-store (raw)
             if (struct? raw)
               decode-map-as (&struct:to-map raw) app.schema/Store
               decode-map-as raw app.schema/Store
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> app.schema/Store)
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states
               {} $ :cursor $ []
               , :content | :rendered? false
           :examples $ []
-          :schema $ :: 'app.schema/Store
+          :schema $ quote app.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.schema
     'app.updater $ %{} 'FileEntry
@@ -415,9 +385,7 @@
               (:hydrate-storage data) (app.schema/decode-store data)
               _ $ do (println "|unknown op:" op) store
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'app.schema/Store 'Enum 'String 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn app.schema/Store Enum String Number (-> app.schema/Store) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require
