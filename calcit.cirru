@@ -17,7 +17,7 @@
           :schema $ quote Trait
         'StringHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait StringHost
-            .split-regex $ quote $ Fn app.comp.container/StringHost app.comp.container/RegexHost (-> JsObject)
+            .split-regex $ Fn app.comp.container/StringHost app.comp.container/RegexHost $ -> JsObject
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :split-regex |split
@@ -38,21 +38,23 @@
                         :padding "|40px 80px"
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
-                        hint-fn $ Fn (Map Tag Dynamic)
-                          Fn Enum $ -> Unit
+                        hint-fn $ Fn respo.schema/RespoEvent
+                          Fn AnyEnum $ -> Unit
                           -> Unit
                         d! $ Op :content $ event-value e
                 a $ {}
                   :class-name $ str-spaced css/link css-toggle
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
-                    hint-fn $ Fn (Map Tag Dynamic)
-                      Fn Enum $ -> Unit
+                    hint-fn $ Fn respo.schema/RespoEvent
+                      Fn AnyEnum $ -> Unit
                       -> Unit
                     d! $ Op :toggle-rendered
-                when dev? $ comp-typed-reel (>> states :reel) reel $ {}
+                if dev?
+                  Option :some $ comp-typed-reel (>> states :reel) reel $ {}
+                  Option :none
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State Enum app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn (reel.typed/State AnyEnum app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -87,7 +89,7 @@
                   {} $ :class-name css-content-area
                   -> paragraphs $ map-indexed $ fn (idx paragraph)
                     [] idx $ memo-comp-by idx comp-paragraph-ui paragraph
-                =< &unit |40vh
+                space-y |40vh
           :examples $ []
           :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
         'comp-word-ui $ %{} 'CodeEntry (:doc |)
@@ -141,11 +143,9 @@
           :schema $ quote String
         'event-value $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn event-value (event)
-            decode-map-as
-              .unwrap $ get event :value
-              , 'String
+            decode-map-as (:value event) 'String
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> String) (:features :js-ffi)
+          :schema $ quote $ Fn respo.schema/RespoEvent (-> String) (:features :js-ffi)
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
             unsafe-coerce (new js/RegExp pattern) RegexHost
@@ -164,15 +164,13 @@
             match (get-env |azure-key)
               (:some key)
                 let
-                    speak-queue $ unsafe-coerce speechQueue $ quote
-                      Fn String String String
-                        Fn $ -> Unit
-                        -> Unit
+                    speak-queue $ unsafe-coerce speechQueue $ Fn String String String
+                      Fn $ -> Unit
+                      -> Unit
                   speak-queue text key language $ fn () &unit
               (:none)
                 let
-                    speak-native $ unsafe-coerce nativeSpeechOne $ quote
-                      Fn String String $ -> Unit
+                    speak-native $ unsafe-coerce nativeSpeechOne $ Fn String String (-> Unit)
                   speak-native text language
           :examples $ []
           :schema $ quote $ Fn String String (-> Unit) (:features :js-ffi)
@@ -182,7 +180,7 @@
               to-calcit-data
                 .split-regex (unsafe-coerce text StringHost) pattern
                 , true
-              :: 'List 'String
+              List String
           :examples $ []
           :schema $ quote $ Fn String app.comp.container/RegexHost
             -> $ List String
@@ -193,7 +191,7 @@
             respo-ui.core :refer $ hsl
             respo.core :refer $ defcomp <> >> div textarea list-> a memo-comp-by
             respo.css :refer $ defstyle
-            respo.comp.space :refer $ =<
+            respo.comp.space :refer $ space-y
             reel.comp.reel :refer $ comp-typed-reel
             app.config :refer $ dev? lang
             respo-ui.css :as css
@@ -223,22 +221,18 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel (typed/new-reel app.schema/store)
           :examples $ []
-          :schema $ quote $ Ref (reel.typed/State Enum app.schema/Store)
+          :schema $ quote $ Ref (reel.typed/State AnyEnum app.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
-            if (enum? op)
-              do
-                when config/dev? $ println |Dispatch: op
-                match (typed/decode-control op)
-                  (:some control)
-                    reset! *reel $ typed/apply-control updater @*reel control
-                  (:none)
-                    reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
-                , &unit
-              raise |Expected-Enum-operation
+            when config/dev? $ println |Dispatch: op
+            match (typed/decode-control op)
+              (:some control)
+                reset! *reel $ typed/apply-control updater @*reel control
+              (:none)
+                reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -250,7 +244,7 @@
               (:none) &unit
             render-app!
             add-watch! *reel :changes $ fn (reel prev)
-              hint-fn $ Fn (reel.typed/State Enum app.schema/Store) (reel.typed/State Enum app.schema/Store) (-> Unit)
+              hint-fn $ Fn (reel.typed/State AnyEnum app.schema/Store) (reel.typed/State AnyEnum app.schema/Store) (-> Unit)
               render-app!
             listen-devtools! |k dispatch!
             add-event-listener! |beforeunload $ fn (_)
@@ -283,7 +277,7 @@
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ Fn (reel.typed/State Enum app.schema/Store) (reel.typed/State Enum app.schema/Store) (-> Unit)
+                  hint-fn $ Fn (reel.typed/State AnyEnum app.schema/Store) (reel.typed/State AnyEnum app.schema/Store) (-> Unit)
                   render-app!
                 reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
@@ -327,29 +321,27 @@
           :code $ quote $ def DispatchOp
             :: :states ([]) nil
           :examples $ []
-          :schema $ quote Enum
+          :schema $ quote AnyEnum
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op
-            :states
-              quote $ List Dynamic
-              , 'Dynamic
-            :content 'String
+            :states (List respo.schema/CoordKey) Dynamic
+            :content String
             :toggle-rendered
-            :hydrate-storage 'app.schema/Store
+            :hydrate-storage app.schema/Store
             :reel/toggle
-            :reel/recall 'Number
+            :reel/recall Number
             :reel/run
             :reel/step
             :reel/merge
             :reel/reset
-            :reel/remove 'Number
+            :reel/remove Number
           :examples $ []
           :schema $ quote EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ quote $ Map Dynamic Dynamic
-            :content 'String
-            :rendered? 'Bool
+            :states $ Map Dynamic Dynamic
+            :content String
+            :rendered? Bool
           :examples $ []
           :schema $ quote StructDef
         'decode-store $ %{} 'CodeEntry (:doc |)
@@ -376,16 +368,16 @@
               (:states cursor data)
                 assoc store :states $ decode-map-as
                   update-state-tree (:states store)
-                    decode-map-as cursor $ :: 'List 'Dynamic
+                    decode-map-as cursor $ List respo.schema/CoordKey
                     , data
-                  :: 'Map 'Dynamic 'Dynamic
+                  Map Dynamic Dynamic
               (:content data)
                 assoc store :content $ decode-map-as data 'String
               (:toggle-rendered) (update store :rendered? not)
               (:hydrate-storage data) (app.schema/decode-store data)
               _ $ do (println "|unknown op:" op) store
           :examples $ []
-          :schema $ quote $ Fn app.schema/Store Enum String Number (-> app.schema/Store) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/Store AnyEnum String Number (-> app.schema/Store) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require
