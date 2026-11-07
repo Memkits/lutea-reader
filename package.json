@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@calcit/procs": "0.35.1",
+    "@calcit/procs": "0.37.0",
     "@memkits/azure-speech-util": "^0.0.5",
     "microsoft-cognitiveservices-speech-sdk": "1.52.0"
   },
@@ -11,7 +11,7 @@
   "resolutions": {
     "microsoft-cognitiveservices-speech-sdk": "1.52.0"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "packageManager": "yarn@4.18.0",
   "scripts": {
     "compile": "calcit calcit.cirru js",
