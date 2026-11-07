@@ -4,7 +4,7 @@
 
 ## 使用者需要注意
 
-配对正式 **Calcit / @calcit/procs 0.35.1**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.4、Reel 0.9.2、UI 0.15.1、JS FFI 0.2.13，传递 Router 0.12.1。重新安装完整图、生成 JS、重启并刷新，不混用旧 runtime。UI 升级可能有样式差异，不承诺逐像素相同。
+配对正式 **Calcit / @calcit/procs 0.37.0**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.5、Reel 0.10.0、UI 0.15.2、JS FFI 0.2.13，传递 Router 0.12.2。重新安装完整图、生成 JS、重启并刷新，不混用旧 runtime。UI 升级可能有样式差异，不承诺逐像素相同。
 
 阅读分词、词级渐变和英文词间空格保持；连续空白按原合同在阅读视图显示为一个空格，编辑器原文不改写。公开 Store/Op、`lutea-reader` 存储键与旧 Map/Struct 恢复合同保持。先读取/解析/解码/hydrate，再渲染并注册退出和60秒保存；恢复失败中止启动、保留原文，不自动清除/回退/修复，见 [#13](https://github.com/Memkits/lutea-reader/issues/13)。
 
@@ -12,7 +12,7 @@
 
 ## 本次迁移与风险
 
-- 以 RespoEvent 读取编辑输入。派发和 Reel 接收 AnyEnum，状态路径使用 CoordKey union。
+- 以 RespoEvent 读取编辑输入。派发、reducer 和 Reel 共用具名 `Op`，状态路径使用 CoordKey union。
 - 开发面板使用 Option 表达缺席，阅读区底部使用 40vh 的垂直间距。
 - 配对 deps/runtime/lock，一小时 npm 包龄无例外，原 CI/测试/全部类型门禁、权限、正式 Action tags 与部署路径保持。不增加 checker、concurrently、预算或编译器 fix/proof 规则。
 

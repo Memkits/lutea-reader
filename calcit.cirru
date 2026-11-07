@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/
-      :type-slots $ {} $ :dispatch-op |app.schema/DispatchOp
+      :type-slots $ {} $ :dispatch-op 'app.schema/Op
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
@@ -39,7 +39,7 @@
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
                         hint-fn $ Fn respo.schema/RespoEvent
-                          Fn AnyEnum $ -> Unit
+                          Fn app.schema/Op $ -> Unit
                           -> Unit
                         d! $ Op :content $ event-value e
                 a $ {}
@@ -47,14 +47,14 @@
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
                     hint-fn $ Fn respo.schema/RespoEvent
-                      Fn AnyEnum $ -> Unit
+                      Fn app.schema/Op $ -> Unit
                       -> Unit
                     d! $ Op :toggle-rendered
                 if dev?
                   Option :some $ comp-typed-reel (>> states :reel) reel $ {}
                   Option :none
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State AnyEnum app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn (reel.typed/State app.schema/Op app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -70,8 +70,8 @@
                 a $ {} (:inner-text |Speech)
                   :class-name $ str-spaced css/link css-speech-button
                   :on-click $ fn (e d!)
-                    hint-fn $ Fn (Map Tag Dynamic)
-                      Fn Enum $ -> Unit
+                    hint-fn $ Fn respo.schema/RespoEvent
+                      Fn app.schema/Op $ -> Unit
                       -> Unit
                     speak-text! p lang
           :examples $ []
@@ -221,7 +221,7 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel (typed/new-reel app.schema/store)
           :examples $ []
-          :schema $ quote $ Ref (reel.typed/State AnyEnum app.schema/Store)
+          :schema $ quote $ Ref (reel.typed/State app.schema/Op app.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
@@ -232,7 +232,7 @@
                 reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/Op (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -244,9 +244,9 @@
               (:none) &unit
             render-app!
             add-watch! *reel :changes $ fn (reel prev)
-              hint-fn $ Fn (reel.typed/State AnyEnum app.schema/Store) (reel.typed/State AnyEnum app.schema/Store) (-> Unit)
+              hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
               render-app!
-            listen-devtools! |k dispatch!
+            listen-devtools-toggle! |k $ fn () $ dispatch! (app.schema/Op :reel/toggle)
             add-event-listener! |beforeunload $ fn (_)
               hint-fn $ Fn js-ffi.browser/EventHost $ -> Unit
               persist-storage!
@@ -277,7 +277,7 @@
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ Fn (reel.typed/State AnyEnum app.schema/Store) (reel.typed/State AnyEnum app.schema/Store) (-> Unit)
+                  hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
                   render-app!
                 reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
@@ -290,7 +290,7 @@
             render-with! mount-target
               fn () $ comp-container @*reel
               fn (op)
-                hint-fn $ Fn Enum $ -> Unit
+                hint-fn $ Fn app.schema/Op $ -> Unit
                 dispatch! op
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
@@ -307,7 +307,7 @@
             respo.core :refer $ render-with! clear-cache!
             app.comp.container :refer $ comp-container
             app.updater :refer $ updater
-            reel.util :refer $ listen-devtools!
+            reel.util :refer $ listen-devtools-toggle!
             reel.typed :as typed
             js-ffi.shared :as host
             respo.ffi.browser :as dom
@@ -317,11 +317,6 @@
             js-ffi.browser :refer $ add-event-listener! set-interval! storage-get storage-set! keyboard-event-host
     'app.schema $ %{} 'FileEntry
       :defs $ {}
-        'DispatchOp $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def DispatchOp
-            :: :states ([]) nil
-          :examples $ []
-          :schema $ quote AnyEnum
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op
             :states (List respo.schema/CoordKey) Dynamic
@@ -367,17 +362,14 @@
             match op
               (:states cursor data)
                 assoc store :states $ decode-map-as
-                  update-state-tree (:states store)
-                    decode-map-as cursor $ List respo.schema/CoordKey
-                    , data
+                  update-state-tree (:states store) cursor data
                   Map Dynamic Dynamic
-              (:content data)
-                assoc store :content $ decode-map-as data 'String
+              (:content data) (assoc store :content data)
               (:toggle-rendered) (update store :rendered? not)
-              (:hydrate-storage data) (app.schema/decode-store data)
+              (:hydrate-storage data) data
               _ $ do (println "|unknown op:" op) store
           :examples $ []
-          :schema $ quote $ Fn app.schema/Store AnyEnum String Number (-> app.schema/Store) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/Store app.schema/Op String Number (-> app.schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require
