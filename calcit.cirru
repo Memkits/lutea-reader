@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/
-      :type-slots $ {} $ :dispatch-op 'app.schema/Op
+      :type-slots $ {} $ :dispatch-op 'app.schema/RenderEvent
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
@@ -225,14 +225,24 @@
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
-            match (typed/decode-control op)
-              (:some control)
-                reset! *reel $ typed/apply-control updater @*reel control
-              (:none)
-                reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
+            reset! *reel $ match op
+              (reel.typed/Control control) (typed/apply-control updater @*reel control)
+              (app.schema/Op action)
+                typed/record-op updater @*reel action (generate-id!) (host/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn app.schema/Op (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/ResolvedOp (-> Unit) (:features :js-ffi)
+        'dispatch-render! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn dispatch-render! (op)
+            match (typed/decode-control op)
+              (:some control) (dispatch! control)
+              (:none)
+                if
+                  = (enum-definition op) (Option :some app.schema/Op)
+                  dispatch! $ decode-map-as op 'app.schema/Op
+                  raise |unknown-reader-operation
+          :examples $ []
+          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -246,7 +256,7 @@
             add-watch! *reel :changes $ fn (reel prev)
               hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
               render-app!
-            listen-devtools-toggle! |k $ fn () $ dispatch! (app.schema/Op :reel/toggle)
+            listen-devtools-toggle! |k $ fn () $ dispatch! (reel.typed/Control :toggle)
             add-event-listener! |beforeunload $ fn (_)
               hint-fn $ Fn js-ffi.browser/EventHost $ -> Unit
               persist-storage!
@@ -289,9 +299,7 @@
           :code $ quote $ defn render-app! ()
             render-with! mount-target
               fn () $ comp-container @*reel
-              fn (op)
-                hint-fn $ Fn app.schema/Op $ -> Unit
-                dispatch! op
+              , dispatch-render!
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'toggle-shortcut? $ %{} 'CodeEntry (:doc |)
@@ -323,15 +331,17 @@
             :content String
             :toggle-rendered
             :hydrate-storage app.schema/Store
-            :reel/toggle
-            :reel/recall Number
-            :reel/run
-            :reel/step
-            :reel/merge
-            :reel/reset
-            :reel/remove Number
           :examples $ []
           :schema $ quote EnumDef
+        'RenderEvent $ %{} 'CodeEntry
+          :doc "|Respo entry slot for nominal UI operations and legacy anonymous Reel events."
+          :code $ quote $ def RenderEvent (:: :unhandled)
+          :examples $ []
+          :schema $ quote AnyEnum
+        'ResolvedOp $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion ResolvedOp app.schema/Op reel.typed/Control
+          :examples $ []
+          :schema $ quote UnionDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
             :states $ Map Dynamic Dynamic
@@ -367,7 +377,6 @@
               (:content data) (assoc store :content data)
               (:toggle-rendered) (update store :rendered? not)
               (:hydrate-storage data) data
-              _ $ do (println "|unknown op:" op) store
           :examples $ []
           :schema $ quote $ Fn app.schema/Store app.schema/Op String Number (-> app.schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
