@@ -95,9 +95,9 @@ test("actual main persistence uses the original key and a compatible Map round t
     };
     globalThis.window = { localStorage: globalThis.localStorage };
     main.dispatch_$x_(op("content", "Saved fixture"));
-    main.dispatch_$x_(op("reel/recall", 0));
+    main.dispatch_render_$x_(c._$o__$o_(t["reel/recall"], 0));
     assert.equal(read(read(c.deref(main._$s_reel), "store"), "content"), "");
-    main.dispatch_$x_(op("reel/run"));
+    main.dispatch_render_$x_(c._$o__$o_(t["reel/run"]));
     main.persist_storage_$x_();
     assert.equal(writes.length, 1);
     assert.equal(writes[0][0], "lutea-reader");
