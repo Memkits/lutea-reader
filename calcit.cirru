@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/
-      :type-slots $ {} $ :dispatch-op 'app.schema/RenderEvent
+      :type-slots $ {} $ :dispatch-op 'app.schema/Op
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
@@ -23,7 +23,7 @@
             :names $ {} $ :split-regex |split
           :schema $ quote Trait
         'comp-container $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defcomp comp-container (reel)
+          :code $ quote $ defcomp comp-container (reel on-control!)
             let
                 store $ :store reel
                 states store.:states
@@ -51,10 +51,13 @@
                       -> Unit
                     d! $ Op :toggle-rendered
                 if dev?
-                  Option :some $ comp-typed-reel (>> states :reel) reel $ {}
+                  Option :some $ comp-typed-reel (>> states :reel) reel ({}) on-control!
                   Option :none
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State app.schema/Op app.schema/Store) (-> respo.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn (reel.typed/State app.schema/Op app.schema/Store)
+            Fn reel.typed/Control $ -> Unit
+            -> respo.schema/Component
+            :features :js-ffi
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -233,16 +236,9 @@
           :examples $ []
           :schema $ quote $ Fn app.schema/ResolvedOp (-> Unit) (:features :js-ffi)
         'dispatch-render! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn dispatch-render! (op)
-            match (typed/decode-control op)
-              (:some control) (dispatch! control)
-              (:none)
-                if
-                  = (enum-definition op) (Option :some app.schema/Op)
-                  dispatch! $ decode-map-as op 'app.schema/Op
-                  raise |unknown-reader-operation
+          :code $ quote $ defn dispatch-render! (op) (dispatch! op)
           :examples $ []
-          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/Op (-> Unit)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -256,7 +252,7 @@
             add-watch! *reel :changes $ fn (reel prev)
               hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
               render-app!
-            listen-devtools-toggle! |k $ fn () $ dispatch! (reel.typed/Control :toggle)
+            listen-devtools! |k on-control!
             add-event-listener! |beforeunload $ fn (_)
               hint-fn $ Fn js-ffi.browser/EventHost $ -> Unit
               persist-storage!
@@ -275,6 +271,10 @@
             .unwrap $ dom/query-selector |.app
           :examples $ []
           :schema $ quote respo.dom/DomElement
+        'on-control! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn on-control! (control) (dispatch! control)
+          :examples $ []
+          :schema $ quote $ Fn reel.typed/Control (-> Unit)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             storage-set!
@@ -298,7 +298,7 @@
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render-with! mount-target
-              fn () $ comp-container @*reel
+              fn () $ comp-container @*reel on-control!
               , dispatch-render!
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
@@ -315,7 +315,7 @@
             respo.core :refer $ render-with! clear-cache!
             app.comp.container :refer $ comp-container
             app.updater :refer $ updater
-            reel.util :refer $ listen-devtools-toggle!
+            reel.util :refer $ listen-devtools!
             reel.typed :as typed
             js-ffi.shared :as host
             respo.ffi.browser :as dom
@@ -333,11 +333,6 @@
             :hydrate-storage app.schema/Store
           :examples $ []
           :schema $ quote EnumDef
-        'RenderEvent $ %{} 'CodeEntry
-          :doc "|Respo entry slot for nominal UI operations and legacy anonymous Reel events."
-          :code $ quote $ def RenderEvent (:: :unhandled)
-          :examples $ []
-          :schema $ quote AnyEnum
         'ResolvedOp $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defunion ResolvedOp app.schema/Op reel.typed/Control
           :examples $ []
