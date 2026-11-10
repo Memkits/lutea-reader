@@ -15,13 +15,6 @@
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
-        'StringHost $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ deftrait StringHost
-            .split-regex $ Fn app.comp.container/StringHost app.comp.container/RegexHost $ -> JsObject
-          :examples $ []
-          :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-            :names $ {} $ :split-regex |split
-          :schema $ quote Trait
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel on-control!)
             let
@@ -151,7 +144,7 @@
           :schema $ quote $ Fn respo.schema/RespoEvent (-> String) (:features :js-ffi)
         'make-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn make-regex (pattern)
-            unsafe-coerce (new js/RegExp pattern) RegexHost
+            js-cast (new js/RegExp pattern) 'RegexHost
           :examples $ []
           :schema $ quote $ Fn String (-> app.comp.container/RegexHost) (:features :js-ffi)
         'pattern-lines $ %{} 'CodeEntry (:doc |)
@@ -180,9 +173,7 @@
         'split-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn split-regex (text pattern)
             decode-map-as
-              to-calcit-data
-                .split-regex (unsafe-coerce text StringHost) pattern
-                , true
+              to-calcit-data (js/String.prototype.split.call text pattern) true
               List String
           :examples $ []
           :schema $ quote $ Fn String app.comp.container/RegexHost
@@ -350,7 +341,7 @@
               decode-map-as (&struct:to-map raw) app.schema/Store
               decode-map-as raw app.schema/Store
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> app.schema/Store)
+          :schema $ quote $ Fn Input (-> app.schema/Store) (:generics Input)
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states

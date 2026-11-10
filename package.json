@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@calcit/procs": "0.38.0",
+    "@calcit/procs": "0.40.0",
     "@memkits/azure-speech-util": "^0.0.5",
     "microsoft-cognitiveservices-speech-sdk": "1.52.0"
   },
