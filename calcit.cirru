@@ -32,7 +32,7 @@
                         :background-color $ hsl 0 0 94
                       :on-input $ fn (e d!)
                         hint-fn $ Fn respo.schema/RespoEvent
-                          Fn app.schema/Op $ -> Unit
+                          Fn Op $ -> Unit
                           -> Unit
                         d! $ Op :content $ event-value e
                 a $ {}
@@ -40,7 +40,7 @@
                   :inner-text |Toggle
                   :on-click $ fn (e d!)
                     hint-fn $ Fn respo.schema/RespoEvent
-                      Fn app.schema/Op $ -> Unit
+                      Fn Op $ -> Unit
                       -> Unit
                     d! $ Op :toggle-rendered
                 if dev?
@@ -67,7 +67,7 @@
                   :class-name $ str-spaced css/link css-speech-button
                   :on-click $ fn (e d!)
                     hint-fn $ Fn respo.schema/RespoEvent
-                      Fn app.schema/Op $ -> Unit
+                      Fn Op $ -> Unit
                       -> Unit
                     speak-text! p lang
           :examples $ []
@@ -241,7 +241,7 @@
               (:none) &unit
             render-app!
             add-watch! *reel :changes $ fn (reel prev)
-              hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
+              hint-fn $ Fn (typed/State app.schema/Op app.schema/Store) (typed/State app.schema/Op app.schema/Store) (-> Unit)
               render-app!
             listen-devtools! |k on-control!
             add-event-listener! |beforeunload $ fn (_)
@@ -278,7 +278,7 @@
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ Fn (reel.typed/State app.schema/Op app.schema/Store) (reel.typed/State app.schema/Op app.schema/Store) (-> Unit)
+                  hint-fn $ Fn (typed/State app.schema/Op app.schema/Store) (typed/State app.schema/Op app.schema/Store) (-> Unit)
                   render-app!
                 reset! *reel $ typed/refresh updater @*reel app.schema/store
                 hud! |ok~ |Ok
