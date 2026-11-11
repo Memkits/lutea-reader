@@ -44,10 +44,10 @@
                       -> Unit
                     d! $ Op :toggle-rendered
                 if dev?
-                  Option :some $ comp-typed-reel (>> states :reel) reel ({}) on-control!
-                  Option :none
+                  Some $ comp-typed-reel (>> states :reel) reel ({}) on-control!
+                  , None
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State app.schema/Op app.schema/Store)
+          :schema $ quote $ Fn (reel.typed/State Op app.schema/Store)
             Fn reel.typed/Control $ -> Unit
             -> respo.schema/Component
             :features :js-ffi
@@ -122,7 +122,7 @@
               |$0:focus $ {}
                 :background-color $ hsl 190 0 100
                 :border-left $ str "|2px solid " $ hsl 0 0 100
-                :box-shadow $ str "|0 0 6px " $ hsl 0 0 0 (Option :some 0.2)
+                :box-shadow $ str "|0 0 6px " $ hsl 0 0 0 (Some 0.2)
                 :z-index |101
                 :border-radius |4px
           :examples $ []
@@ -146,15 +146,15 @@
           :code $ quote $ defn make-regex (pattern)
             js-cast (new js/RegExp pattern) 'RegexHost
           :examples $ []
-          :schema $ quote $ Fn String (-> app.comp.container/RegexHost) (:features :js-ffi)
+          :schema $ quote $ Fn String (-> RegexHost) (:features :js-ffi)
         'pattern-lines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def pattern-lines (make-regex |\n\n+)
           :examples $ []
-          :schema $ quote app.comp.container/RegexHost
+          :schema $ quote RegexHost
         'pattern-spaces $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def pattern-spaces (make-regex |\s+)
           :examples $ []
-          :schema $ quote app.comp.container/RegexHost
+          :schema $ quote RegexHost
         'speak-text! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn speak-text! (text language)
             match (get-env |azure-key)
@@ -176,7 +176,7 @@
               to-calcit-data (js/String.prototype.split.call text pattern) true
               List String
           :examples $ []
-          :schema $ quote $ Fn String app.comp.container/RegexHost
+          :schema $ quote $ Fn String RegexHost
             -> $ List String
             :features :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
@@ -215,7 +215,7 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel (typed/new-reel app.schema/store)
           :examples $ []
-          :schema $ quote $ Ref (reel.typed/State app.schema/Op app.schema/Store)
+          :schema $ quote $ Ref (typed/State app.schema/Op app.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
@@ -265,7 +265,7 @@
         'on-control! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn on-control! (control) (dispatch! control)
           :examples $ []
-          :schema $ quote $ Fn reel.typed/Control (-> Unit)
+          :schema $ quote $ Fn typed/Control (-> Unit)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             storage-set!
@@ -318,7 +318,7 @@
       :defs $ {}
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op
-            :states (List respo.schema/CoordKey) Dynamic
+            :states (List respo.schema/CoordKey) String
             :content String
             :toggle-rendered
             :hydrate-storage app.schema/Store
@@ -341,14 +341,14 @@
               decode-map-as (&struct:to-map raw) app.schema/Store
               decode-map-as raw app.schema/Store
           :examples $ []
-          :schema $ quote $ Fn Input (-> app.schema/Store) (:generics Input)
+          :schema $ quote $ Fn Input (-> Store) (:generics Input)
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states
               {} $ :cursor $ []
               , :content | :rendered? false
           :examples $ []
-          :schema $ quote app.schema/Store
+          :schema $ quote Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.schema
     'app.updater $ %{} 'FileEntry
@@ -364,7 +364,7 @@
               (:toggle-rendered) (update store :rendered? not)
               (:hydrate-storage data) data
           :examples $ []
-          :schema $ quote $ Fn app.schema/Store app.schema/Op String Number (-> app.schema/Store)
+          :schema $ quote $ Fn schema/Store schema/Op String Number (-> schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require
