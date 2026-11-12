@@ -50,7 +50,7 @@
           :schema $ quote $ Fn (reel.typed/State Op app.schema/Store)
             Fn reel.typed/Control $ -> Unit
             -> respo.schema/Component
-            :features :js-ffi
+            :features :io :js-ffi
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -71,7 +71,7 @@
                       -> Unit
                     speak-text! p lang
           :examples $ []
-          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :io :js-ffi)
         'comp-reader-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-reader-ui (content)
             let
@@ -87,7 +87,7 @@
                     [] idx $ memo-comp-by idx comp-paragraph-ui paragraph
                 space-y |40vh
           :examples $ []
-          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :io :js-ffi)
         'comp-word-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-word-ui (word)
             let
@@ -169,7 +169,7 @@
                     speak-native $ unsafe-coerce nativeSpeechOne $ Fn String String (-> Unit)
                   speak-native text language
           :examples $ []
-          :schema $ quote $ Fn String String (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn String String (-> Unit) (:features :io :js-ffi)
         'split-regex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn split-regex (text pattern)
             decode-map-as
@@ -225,11 +225,11 @@
                 typed/record-op updater @*reel action (generate-id!) (host/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn app.schema/ResolvedOp (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/ResolvedOp (-> Unit) (:features :io :js-ffi :state)
         'dispatch-render! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch-render! (op) (dispatch! op)
           :examples $ []
-          :schema $ quote $ Fn app.schema/Op (-> Unit)
+          :schema $ quote $ Fn app.schema/Op (-> Unit) (:features :io :state)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -256,7 +256,7 @@
               , &unit
             println "|App started."
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
             .unwrap $ dom/query-selector |.app
@@ -265,14 +265,14 @@
         'on-control! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn on-control! (control) (dispatch! control)
           :examples $ []
-          :schema $ quote $ Fn typed/Control (-> Unit)
+          :schema $ quote $ Fn typed/Control (-> Unit) (:features :io :state)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             storage-set!
               .unwrap $ get config/site :storage-key
               format-cirru-edn $ &struct:to-map $ :store @*reel
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
@@ -285,14 +285,14 @@
                 , &unit
               do (hud! |error build-errors) &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render-with! mount-target
               fn () $ comp-container @*reel on-control!
               , dispatch-render!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'toggle-shortcut? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn toggle-shortcut? (event)
             and
