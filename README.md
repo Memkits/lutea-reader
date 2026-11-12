@@ -4,7 +4,7 @@
 
 ## 使用者需要注意
 
-配对正式 **Calcit / @calcit/procs 0.41.0**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.5、Reel 0.11.0、UI 0.15.2、JS FFI 0.2.13，传递 Router 0.12.2。重新安装完整图、生成 JS、重启并刷新。
+配对正式 **Calcit / @calcit/procs 0.41.1**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.5、Reel 0.11.0、UI 0.15.2、JS FFI 0.2.13，传递 Router 0.12.2。重新安装完整图、生成 JS、重启并刷新。
 
 阅读分词、词级渐变和英文词间空格保持；连续空白按原合同在阅读视图显示为一个空格，编辑器原文不改写。公开 Store/Op、`lutea-reader` 存储键与旧 Map/Struct 恢复合同保持。先读取/解析/解码/hydrate，再渲染并注册退出和60秒保存；恢复失败中止启动、保留原文，不自动清除/回退/修复，见 [#13](https://github.com/Memkits/lutea-reader/issues/13)。
 
