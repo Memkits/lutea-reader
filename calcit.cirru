@@ -48,9 +48,9 @@
                   , None
           :examples $ []
           :schema $ quote $ Fn (reel.typed/State Op app.schema/Store)
-            Fn reel.typed/Control $ -> Unit
+            Fn reel.typed/Control (-> Unit) (:features :io :state)
             -> respo.schema/Component
-            :features :io :js-ffi
+            :features :io :js-ffi :state
         'comp-paragraph-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-paragraph-ui (p)
             let
@@ -87,7 +87,7 @@
                     [] idx $ memo-comp-by idx comp-paragraph-ui paragraph
                 space-y |40vh
           :examples $ []
-          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :io :js-ffi)
+          :schema $ quote $ Fn String (-> respo.schema/Component) (:features :io :js-ffi :state)
         'comp-word-ui $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-word-ui (word)
             let
