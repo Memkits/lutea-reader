@@ -27,6 +27,7 @@ caps verify --toolchain
 calcit calcit.cirru --check-only --all-defs
 calcit calcit.cirru fix --workflow strict --verify
 yarn build
+calcit --init-fn respo.render.html/make-string --reload-fn respo.render.html/make-string js
 node --test tests/*.test.mjs
 ```
 
