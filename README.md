@@ -4,7 +4,7 @@
 
 ## 使用者需要注意
 
-配对正式 **Calcit / @calcit/procs 0.44.0**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.11、Reel 0.11.3、UI 0.15.5、JS FFI 0.2.18，传递 Router 0.12.9。重新安装完整图、生成 JS、重启并刷新。
+配对正式 **Calcit / @calcit/procs 0.44.0**、Caps 0.1.1、Node 24 和 Yarn 4.18.0。模块使用正式 Respo 0.19.13、Reel 0.11.5、UI 0.15.7、JS FFI 0.2.19，传递 Router 0.12.11。重新安装完整图、生成 JS、重启并刷新。
 
 阅读分词、词级渐变和英文词间空格保持；连续空白按原合同在阅读视图显示为一个空格，编辑器原文不改写。公开 Store/Op、`lutea-reader` 存储键与旧 Map/Struct 恢复合同保持。先读取/解析/解码/hydrate，再渲染并注册退出和60秒保存；恢复失败中止启动、保留原文，不自动清除/回退/修复，见 [#13](https://github.com/Memkits/lutea-reader/issues/13)。
 
@@ -31,9 +31,9 @@ calcit --init-fn respo.render.html/make-string --reload-fn respo.render.html/mak
 node --test tests/*.test.mjs
 ```
 
-候选通过221个全定义、完整 strict diagnostics=[]、原8项阅读/持久化/离线语音回归、canonical 和构建。原测试文件及全部断言保持；没有附带 native 测试，不把空集合计为通过。
+此前迁移候选通过221个全定义、完整 strict diagnostics=[]、原8项阅读/持久化/离线语音回归、canonical 和构建。原测试文件及全部断言保持；没有附带 native 测试，不把空集合计为通过。
 
-全新回环来源实际验证了中英文/emoji两段文本、词间空格、连续空白不改写原文、Toggle、⌘E 和阅读状态/内容刷新恢复，浏览器 warn/error=[]。本轮不读取真实存档，不把历史坏存档/HUD注错验收记作重验；失败存档保护与原语音代码未改，不宣称真实语音已验收。构建保留原 SDK 造成的大 chunk 提示，不通过隐藏告警冒充优化。
+此前迁移在全新回环来源实际验证了中英文/emoji两段文本、词间空格、连续空白不改写原文、Toggle、⌘E 和阅读状态/内容刷新恢复，浏览器 warn/error=[]。本轮不读取真实存档，不把历史坏存档/HUD注错验收记作重验；失败存档保护与原语音代码未改，不宣称真实语音已验收。构建保留原 SDK 造成的大 chunk 提示，不通过隐藏告警冒充优化。
 
 `yarn dev` 编译一次再启动 Vite，监听另开终端运行 `calcit calcit.cirru js -w`。仅维护 calcit.cirru/deps.cirru，Snapshot 使用官方 CLI，不恢复 compact.cirru/package.cirru，不提交 js-out/dist。
 
